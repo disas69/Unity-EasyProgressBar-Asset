@@ -17,12 +17,15 @@ Shader "Unlit/Easy Progress Bar"
     {
         Tags
         {
-            "RenderType"="Opaque"
-            "Queue"="Geometry"
+            "RenderType"="Transparent"
+            "Queue"="Transparent"
         }
 
         Pass
         {
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite Off
+
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -61,48 +64,54 @@ Shader "Unlit/Easy Progress Bar"
                 return o;
             }
 
-            fixed CalculateSDF(float2 position, float roundness, float2 halfSize)
+            fixed CalculateDistance(float2 position, float roundness, float2 halfSize)
             {
-                float2 distanceToEdge = abs(position) - (halfSize - roundness);
-                float outsideDistance = length(max(distanceToEdge, 0));
-                float insideDistance = min(max(distanceToEdge.x, distanceToEdge.y), 0);
+                float2 edge = abs(position) - (halfSize - roundness);
+                float outDistance = length(max(edge, 0));
+                float insDistance = min(max(edge.x, edge.y), 0);
 
-                return outsideDistance + insideDistance - roundness;
+                return outDistance + insDistance - roundness;
+            }
+
+            float ApplyAntialiasing(float distance)
+            {
+                float f = fwidth(distance) * 0.5;
+                return smoothstep(f, -f, distance);
             }
 
             fixed4 frag(v2f i) : SV_Target
             {
-                fixed fillAmount;
-                float mainAxisHalfSize;
+                fixed uvPos;
+                float axisHalfSize;
 
                 if (_Size.x < _Size.y)
                 {
-                    fillAmount = i.uv.y;
-                    mainAxisHalfSize = _Size.x * 0.5;
+                    uvPos = i.uv.y;
+                    axisHalfSize = _Size.x * 0.5;
                 }
                 else
                 {
-                    fillAmount = i.uv.x;
-                    mainAxisHalfSize = _Size.y * 0.5;
+                    uvPos = i.uv.x;
+                    axisHalfSize = _Size.y * 0.5;
                 }
 
-                fixed sdf = CalculateSDF((i.uv - 0.5) * _Size, _Roundness * mainAxisHalfSize, _Size * 0.5);
-                clip(-sdf);
+                fixed frameDistance = CalculateDistance((i.uv - 0.5) * _Size, _Roundness * axisHalfSize, _Size * 0.5);
+                fixed frameMask = ApplyAntialiasing(frameDistance);
+                
+                fixed borderDistance = frameDistance + _BorderSize * axisHalfSize;
+                fixed borderMask = ApplyAntialiasing(borderDistance);
 
-                fixed borderSdf = sdf + _BorderSize * mainAxisHalfSize;
-                fixed borderMask = step(0, -borderSdf);
-                fixed fillMask = _FillAmount > fillAmount;
-                fixed totalMask = borderMask * fillMask;
+                fixed fillMask = _FillAmount > uvPos;
 
-                if (totalMask < 1)
-                {
-                    return _BackColor * _MainColor;
-                }
+                fixed4 fill = lerp(_StartColor, _EndColor, uvPos * _Gradient + _FillAmount * (1 - _Gradient));
+                fixed4 fillColor = fixed4(fill.xyz, fill.a * borderMask * fillMask);
+                fixed4 backColor = fixed4(_BackColor.xyz, _BackColor.a * frameMask);
 
-                fixed4 color = tex2D(_MainTex, float2(i.uv.x, i.uv.y)) * _MainColor;
-                fixed4 fill = lerp(_StartColor, _EndColor, fillAmount * _Gradient + _FillAmount * (1 - _Gradient));
+                fixed4 mainColor = tex2D(_MainTex, float2(i.uv.x, i.uv.y)) * _MainColor;
+                fixed4 color = lerp(backColor, fillColor, max(fillColor.a, (_BorderSize <= 0 && fillMask) * fill.a));
+                fixed alpha = max(backColor.a, fillColor.a);
 
-                return color * fill;
+                return mainColor * fixed4(color.xyz, alpha);
             }
             ENDCG
         }

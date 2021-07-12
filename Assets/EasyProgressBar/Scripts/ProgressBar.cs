@@ -9,16 +9,16 @@ namespace EasyProgressBar
     {
         private const string ShaderName = "Unlit/Easy Progress Bar";
         
-        private static int _mainTexPropertyID;
-        private static int _mainColorPropertyID;
-        private static int _startColorPropertyID;
-        private static int _endColorPropertyID;
-        private static int _backColorPropertyID;
-        private static int _gradientPropertyID;
-        private static int _roundnessSizePropertyID;
-        private static int _borderSizePropertyID;
-        private static int _fillAmountPropertyID;
-        private static int _sizePropertyID;
+        private int _mainTexPropertyID;
+        private int _mainColorPropertyID;
+        private int _startColorPropertyID;
+        private int _endColorPropertyID;
+        private int _backColorPropertyID;
+        private int _gradientPropertyID;
+        private int _roundnessSizePropertyID;
+        private int _borderSizePropertyID;
+        private int _fillAmountPropertyID;
+        private int _sizePropertyID;
 
         private Image _image;
         private Material _material;
@@ -68,13 +68,13 @@ namespace EasyProgressBar
             _borderSizePropertyID = Shader.PropertyToID("_BorderSize");
             _fillAmountPropertyID = Shader.PropertyToID("_FillAmount");
             _sizePropertyID = Shader.PropertyToID("_Size");
-
+            
             _image = GetComponent<Image>();
             _image.material = _material = new Material(Shader.Find(ShaderName));
-
+            
             UpdateView();
         }
-
+        
         private void Update()
         {
             UpdateView();
@@ -125,6 +125,8 @@ namespace EasyProgressBar
                 {
                     DestroyImmediate(_material);
                 }
+
+                _material = null;
             }
         }
     }
