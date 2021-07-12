@@ -1,11 +1,14 @@
 # Unity-Easy-Progress-Bar
 
-Easy to use procedural progress bar shader.
+Procedural progress bar shader for Unity UI.
 
+Features:
+
+- Super easy to use
 - No graphics needed
-- Adjusts and scales automatically
+- Adjusts and scales automatically (horizontally & vertically)
 - Supports gradient, edge roundness and adjustable border size
-- Supports all rendering pipelines
+- Lightweight and supports all rendering pipelines
 - 1 progress bar = 1 draw call
 
 <img src="Images/epb_editor.PNG" width = "400">
