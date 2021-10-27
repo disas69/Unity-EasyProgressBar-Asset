@@ -2,6 +2,8 @@
 
 Procedural progress bar shader for Unity UI.
 
+* [Demo](https://drive.google.com/file/d/1DgCD72ZsK51jtRe2RFqxR1wCM5CaHYsJ/view?usp=sharing)
+
 Features:
 
 - Super easy to use
@@ -12,5 +14,3 @@ Features:
 - 1 progress bar = 1 draw call
 
 <img src="Images/epb_editor.PNG" width = "400">
-
-* [Video](https://drive.google.com/file/d/1DgCD72ZsK51jtRe2RFqxR1wCM5CaHYsJ/view?usp=sharing)
